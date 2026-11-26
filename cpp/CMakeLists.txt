@@ -102,6 +102,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(polymarket_client)
 
+include(cmake/research-venues.cmake)
+
 add_library(polyarb_market_stream src/market_stream.cpp)
 target_include_directories(polyarb_market_stream PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(polyarb_market_stream PUBLIC polymarket::client)
@@ -160,6 +162,10 @@ install(TARGETS polymarket_arb DESTINATION bin)
 
 if(POLY_ARB_BUILD_TESTS)
     enable_testing()
+
+    add_executable(research_venue_quotes_test tests/research_venue_quotes_test.cpp)
+    target_link_libraries(research_venue_quotes_test PRIVATE research_venue_quotes)
+    add_test(NAME research_venue_quotes_test COMMAND research_venue_quotes_test)
 
     add_executable(market_stream_test tests/market_stream_test.cpp)
     target_link_libraries(market_stream_test PRIVATE polyarb_market_stream)

@@ -33,6 +33,40 @@ Signals include `binary_arbitrage` and `market_making_candidate`. The calculatio
 check visible prices and depth, not a complete fee or execution model. Treat
 reported edge as a research input, not realized profit.
 
+## Limitless and Opinion
+
+Build `research_venues` with the other C++ targets, or run
+`cmake --build cpp/build --target research_venues` after configuration.
+The scanner examines one catalogue page, up to the specified limit (1–20).
+Opinion orders its sample by 24-hour volume. Both scans skip entries without
+distinct YES and NO token IDs.
+
+```bash
+mkdir -p data
+./cpp/build/research_venues limitless 10 > data/limitless.jsonl
+./cpp/build/research_venues opinion 10 > data/opinion.jsonl
+```
+
+Each JSONL record identifies the market and collateral and includes both books,
+receipt times in milliseconds since the Unix epoch, and per-market quote
+metrics when the snapshot has usable prices. Source timestamps appear when the
+venue supplies them. Limitless publishes a single YES book. The SDK derives
+the NO book by reflecting prices and swapping bids and asks. Opinion fetches
+the two token books separately, so their timestamps can differ.
+
+`yes_spread` is YES ask minus YES bid. `bundle_ask` is YES ask plus NO ask.
+Both use quote-token units per share. Missing prices or crossed books yield
+null metrics. The terminal summary reports how many catalogue entries the
+scanner examined, how many it recorded, how many had complete quotes, and the
+mean YES spread.
+Request and validation errors appear on stderr and cause a nonzero exit.
+JSONL can contain records from successful requests in a partial scan.
+
+The scanner uses [limitless-cpp-client](https://github.com/SebastianBoehler/limitless-cpp-client)
+and [opinion-cpp-client](https://github.com/SebastianBoehler/opinion-cpp-client)
+through their read-only REST methods. The Opinion scanner uses the public
+host at `openapi.opinion.trade`.
+
 ## Execution experiments
 
 `polymarket_arb`, `arb_test`, `batch_order_smoke`, `ladder_accumulation`,
