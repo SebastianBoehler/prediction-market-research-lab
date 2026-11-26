@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 310" role="img" aria-labelledby="title">
+  <title id="title">Prediction Market Research Lab</title>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#101b2a"/>
+      <stop offset="1" stop-color="#172b3c"/>
+    </linearGradient>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M38 0H0V38" fill="none" stroke="#86b0c7" stroke-opacity=".2"/>
+    </pattern>
+    <linearGradient id="mask-gradient">
+      <stop stop-color="white" stop-opacity="0"/>
+      <stop offset=".35" stop-color="white"/>
+    </linearGradient>
+    <mask id="fade"><rect x="680" width="520" height="310" fill="url(#mask-gradient)"/></mask>
+  </defs>
+  <rect width="1200" height="310" rx="16" fill="url(#background)"/>
+  <g mask="url(#fade)">
+    <rect x="690" y="29" width="445" height="252" fill="url(#grid)"/>
+    <path d="M694 198H738V186H776V144H818V158H857V101H905V119H952V79H1001V100H1046V66H1120"
+          fill="none" stroke="#61dbc9" stroke-width="3"/>
+    <path d="M694 112H738V124H776V166H818V152H857V209H905V191H952V231H1001V210H1046V244H1120"
+          fill="none" stroke="#8cb9f3" stroke-width="3"/>
+    <path d="M694 198H738V186H776V144H818V158H857V101H905V119H952V79H1001V100H1046V66H1120
+             V244H1046V210H1001V231H952V191H905V209H857V152H818V166H776V124H738V112H694Z"
+          fill="#77d5d4" fill-opacity=".07"/>
+    <circle cx="1120" cy="66" r="5" fill="#61dbc9"/>
+    <circle cx="1120" cy="244" r="5" fill="#8cb9f3"/>
+  </g>
+  <path d="M62 62H104" stroke="#61dbc9" stroke-width="4"/>
+  <g font-family="system-ui, -apple-system, sans-serif">
+    <text x="58" y="139" fill="#f1f6fb" font-size="63" font-weight="700" letter-spacing="-2">Prediction Market</text>
+    <text x="58" y="212" fill="#f1f6fb" font-size="63" font-weight="700" letter-spacing="-2">Research Lab</text>
+    <text x="62" y="261" fill="#adbdcf" font-size="23">Market data, pricing signals, and outcome verification</text>
+  </g>
+</svg>

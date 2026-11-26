@@ -1,163 +1,120 @@
-# prediction-market-research-lab
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="Prediction Market Research Lab" width="100%">
+</p>
 
-[![Build](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/build.yml/badge.svg)](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/build.yml)
-[![C++ Build](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/cpp-build.yml/badge.svg)](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/cpp-build.yml)
-[![License](https://img.shields.io/github/license/SebastianBoehler/prediction-market-research-lab)](LICENSE)
+[![TypeScript CI](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/build.yml)
+[![C++ CI](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/cpp-build.yml/badge.svg?branch=main)](https://github.com/SebastianBoehler/prediction-market-research-lab/actions/workflows/cpp-build.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-A C++20 and TypeScript workspace for prediction-market research: collect market
-snapshots across Polymarket and Kalshi, investigate pricing signals, and test
-strategy hypotheses.
+A TypeScript and C++20 workspace for collecting prediction-market quotes,
+investigating pricing signals, and checking historical outcomes.
 
-## Related projects
+## Research workflow
 
-| Project | Role |
-| --- | --- |
-| **[prediction-market-research-lab](https://github.com/SebastianBoehler/prediction-market-research-lab)** | Research scripts, datasets, paper projections, and experimental strategies |
-| **[polymarket-cpp-client](https://github.com/SebastianBoehler/polymarket-cpp-client)** | Reusable C++ SDK for REST, WebSockets, signing, and positions; used by this lab |
-| [limitless-cpp-client](https://github.com/SebastianBoehler/limitless-cpp-client) | C++ client for Limitless Exchange |
-| [opinion-cpp-client](https://github.com/SebastianBoehler/opinion-cpp-client) | C++ client for Opinion.trade |
+1. **Collect quotes.** Record market metadata, order books where available, and
+   receipt times. The TypeScript collector covers Polymarket and Kalshi.
+   The C++ venue scanner collects Limitless and Opinion order books.
+2. **Inspect the signal.** Compare YES spreads or the combined cost of buying
+   one YES and one NO share. Review each contract's rules before comparing it
+   with a contract on another venue.
+3. **Check the outcome.** The Polymarket verifier joins observations to final
+   resolution payouts by condition ID. Profitability also depends on entry
+   prices, fill quality, fees, and settlement.
 
-Use the SDK for application integration. Use this lab to investigate a research
-question and preserve the assumptions behind a result.
+<img src="docs/assets/historical-quote-cutoffs.png" alt="Historical Polymarket quote updates at or below four combined ask cutoffs: 0.008% at 90 cents, 0.036% at 95 cents, 0.191% at 98 cents, and 0.418% at 99 cents." width="840">
 
-## Status and scope
+In the archived Polymarket sample, 2,792 of 1,465,559 quote updates met the
+98¢ cutoff. Counts include repeated updates within markets and measure quotes.
+[Source CSV](research/archive/summaries/stats-summary.csv) ·
+[Figure method](research/README.md)
 
-- TypeScript tools cover market discovery, CSV collection, outcome analysis,
-  and experimental strategies.
-- C++ `discovery_mode` emits JSONL signals and paper projections without placing orders.
-- Other C++ executables and TypeScript strategies contain execution paths.
-  Their live trading compatibility is **not validated** by the offline tests.
-  Several manually construct order payloads and retain older contract addresses.
-  Upgrading the SDK alone does not migrate those execution paths.
-- Paper results do not include a complete execution, fee, settlement, or inventory model.
-  Historical CSVs and plots are research artifacts, not current performance claims.
+## Quick start
 
-## Quick start: TypeScript
-
-Requires [Bun](https://bun.sh/) 1.3.3 (the CI version).
+Clone the repository and run these commands from its root. TypeScript CI uses
+[Bun](https://bun.sh/) 1.3.3.
 
 ```bash
 git clone https://github.com/SebastianBoehler/prediction-market-research-lab.git
 cd prediction-market-research-lab
 bun install --frozen-lockfile
-bun run typecheck
-bun test
-bun run build
 
-# Public market analysis; requests live APIs, but does not place orders
-bun run analyze
-
-# Collect market snapshots into ./data until Ctrl+C
-bun run collect
+bun run analyze   # One analysis scan
+bun run collect   # Collect until Ctrl+C, writing under data/
 ```
 
-`bun run plots` currently runs the same summary script as `bun run analyze`;
-it does not regenerate the historical PNG plots.
+The TypeScript collector writes JSONL observations and CSV summaries. The
+analysis command reports quote patterns and Polymarket–Kalshi contract review
+candidates. See [research data and verification](docs/research/research-data.md)
+for output schemas and source details.
 
-## Quick start: C++ research
+### C++ venue scans
 
-Requires CMake 3.22+, a C++20 compiler, Git, libcurl, OpenSSL, and zlib.
-Linux and macOS are checked in CI. On Ubuntu:
-
-```bash
-sudo apt-get install cmake build-essential git libcurl4-openssl-dev libssl-dev zlib1g-dev
-```
-
-From the repository root:
+Install CMake 3.22+, a C++20 compiler, Git, libcurl, OpenSSL, and zlib.
+The scanners use public market data and run without wallet credentials.
 
 ```bash
 bun run cpp:configure
 bun run cpp:build
-bun run cpp:test
 
-# One public market scan; writes JSONL to stdout
 bun run discovery:cpp
-
-# Crypto 15-minute markets, with a bounded collection period
-./cpp/build/discovery_mode --15m --duration-min 30 \
-  --interval-ms 30000 --out data/discovery.jsonl
+mkdir -p data
+./cpp/build/research_venues limitless 10 > data/limitless.jsonl
+./cpp/build/research_venues opinion 10 > data/opinion.jsonl
 ```
 
-CMake pins `polymarket-cpp-client` to **v3.0.0**. The lab uses the SDK's public
-`<polymarket/...>` headers and `polymarket::client` target.
-To rebuild the dependency, or explicitly test another ref:
+`discovery_mode` evaluates Polymarket signals and emits paper projections.
+`research_venues` records one bounded catalogue sample per invocation and
+reports complete quote counts and mean YES spread. See the
+[C++ guide](cpp/README.md) for data sources and quote conventions.
 
-```bash
-bun run cpp:update-client
-POLYMARKET_CLIENT_GIT_TAG=<tag-or-commit> bun run cpp:update-client
-```
+### Verify historical outcomes
 
-See [cpp/README.md](cpp/README.md) for executable scope and build details.
-
-## Test a hypothesis
-
-The “nothing ever happens” scripts measure historical binary Yes/No outcomes.
-Choose your own snapshot CSV; raw datasets are not bundled with the repository.
+Collect a Polymarket-only dataset in a fresh output directory with
+`INCLUDE_KALSHI=false OUT_DIR=./data/polymarket bun run collect`.
 
 ```bash
 bun run strategy:nothing-ever-happens -- \
-  --csv data/market-snapshots.csv --side no --category Sports
+  --csv data/polymarket/market-snapshots-v2.csv --side no --category Sports
 
-# Alternatively, query the Gamma closed-market feed
 bun run strategy:nothing-ever-happens:resolved -- \
   --lookback-hours 336 --limit 2000
 ```
 
-The CSV verifier writes `data/nothing-ever-happens-report.md` and caches outcomes
-in `data/market-outcome-cache.json`. A high NO win rate alone does not demonstrate
-profitability: entry prices, sampling, unresolved outcomes, fees, and liquidity matter.
+The CSV verifier writes a report and caches confirmed outcomes under `data/`.
+The resolved-history command samples the closed-market feed for the requested
+period and limit.
 
-## Interpreting pricing signals
+## Reading a pricing signal
 
-For equal shares of complementary YES and NO tokens in the same binary condition,
-combined purchase cost below $1 is a **gross pricing signal**. Realized profit
-also depends on both legs filling, fees, slippage, and settlement.
+Equal shares of complementary YES and NO tokens in the same binary market pay
+a combined $1 per pair under standard settlement.
 
-For example, 100 YES at $0.48 and 100 NO at $0.50 cost $98 before fees.
-A $100 combined payout would leave $2 gross. A quoted book does not guarantee
-those fills. Batch FOK orders apply all-or-nothing to each order individually;
-the pair is not atomic, and one leg can fill while the other fails.
+<img src="docs/assets/binary-bundle-example.png" alt="An illustrative 48-cent YES quote and 50-cent NO quote total 98 cents. A one-dollar settlement payout leaves a two-cent gross difference." width="840">
 
-Fees vary by market. Check the market's current parameters and
-[Polymarket's fee documentation](https://docs.polymarket.com/trading/fees).
-Do not use a universal “0% fees” or “2% of profits” assumption.
-Cross-platform title similarity also does not establish matching resolution rules.
+The difference assumes both legs fill at the quoted prices. Fees and slippage
+reduce the difference, and one leg can fill by itself. Use the market's current
+fee parameters. [Polymarket fee documentation](https://docs.polymarket.com/trading/fees)
 
-## Project layout
+## Project map
 
-| Path | Contents |
+| Where | What you’ll find |
 | --- | --- |
-| `cpp/` | Research scanner, strategy calculations, execution experiments, CTest suite |
-| `src/core/`, `src/services/` | Shared types, market data, wallet monitoring, positions |
-| `src/scripts/`, `src/stats/` | Collection and analysis entry points |
-| `src/strategies/` | Experimental execution strategies |
-| `scripts/nothing-ever-happens/` | Historical outcome verification |
-| `tests/` | Offline Bun tests |
-| `data/` | Local data and reports, ignored by Git |
-| `research/archive/` | Historical tracked research artifacts |
+| [`src/`](src/) | TypeScript discovery, collection, analysis, and execution experiments |
+| [`cpp/`](cpp/) | Venue scanners, paper projections, and offline tests |
+| [`scripts/nothing-ever-happens/`](scripts/nothing-ever-happens/) | Polymarket outcome verification |
+| [`docs/research/`](docs/research/) | Research notes, methodology, and roadmap |
+| [`research/`](research/) | Historical summaries, plots, and the README figure script |
+| `data/` | Local snapshots and generated reports, ignored by Git |
 
-## Research notes
-
-- [Market discovery findings](docs/research/market-discovery-findings.md)
-- [Dead-outcome strategy](docs/research/dead-outcome-strategy.md)
-- [Weather strategy discovery](docs/research/weather-strategy-discovery.md)
-- [Maintenance and compatibility](docs/maintenance.md)
-- [Research roadmap](docs/research/research-roadmap.md)
-- [Research data and verification](docs/research/research-data.md)
-
-These notes preserve earlier investigations. Their dates and assumptions matter;
-they are not evidence that a strategy currently works.
+The lab uses [polymarket-cpp-client](https://github.com/SebastianBoehler/polymarket-cpp-client),
+[limitless-cpp-client](https://github.com/SebastianBoehler/limitless-cpp-client),
+and [opinion-cpp-client](https://github.com/SebastianBoehler/opinion-cpp-client).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks, and research expectations.
-Report reproducible bugs or propose a focused investigation through
-[Issues](https://github.com/SebastianBoehler/prediction-market-research-lab/issues).
-Coding agents should start with [AGENTS.md](AGENTS.md).
-For sensitive reports, follow [SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for offline checks,
+[maintenance notes](docs/maintenance.md) for execution compatibility, and
+[SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
-## License and disclaimer
-
-[MIT](LICENSE). This independent project is not affiliated with Polymarket.
-Experimental execution can lose funds. Respect platform terms and geographic
-restrictions; a proxy or VPN does not establish trading eligibility.
+[MIT License](LICENSE). This independent project includes experimental
+execution code. Live execution requires separate validation.
