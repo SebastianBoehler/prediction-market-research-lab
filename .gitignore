@@ -15,3 +15,5 @@ data/
 market-plots/
 opportunities.csv
 category-stats.csv
+
+/stats-summary*.csv

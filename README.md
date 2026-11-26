@@ -134,16 +134,16 @@ Cross-platform title similarity also does not establish matching resolution rule
 | `scripts/nothing-ever-happens/` | Historical outcome verification |
 | `tests/` | Offline Bun tests |
 | `data/` | Local data and reports, ignored by Git |
-| `plots/`, `stats-summary*.csv` | Historical tracked research artifacts |
+| `research/archive/` | Historical tracked research artifacts |
 
 ## Research notes
 
-- [Market discovery findings](docs/market-discovery-findings.md)
-- [Dead-outcome strategy](docs/dead-outcome-strategy.md)
-- [Weather strategy discovery](docs/weather-strategy-discovery.md)
+- [Market discovery findings](docs/research/market-discovery-findings.md)
+- [Dead-outcome strategy](docs/research/dead-outcome-strategy.md)
+- [Weather strategy discovery](docs/research/weather-strategy-discovery.md)
 - [Maintenance and compatibility](docs/maintenance.md)
-- [Research roadmap](docs/research-roadmap.md)
-- [Research data and verification](docs/research-data.md)
+- [Research roadmap](docs/research/research-roadmap.md)
+- [Research data and verification](docs/research/research-data.md)
 
 These notes preserve earlier investigations. Their dates and assumptions matter;
 they are not evidence that a strategy currently works.

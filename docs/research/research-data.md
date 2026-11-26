@@ -64,4 +64,5 @@ Cross-platform title matches are contract review candidates; their gross
 paired discount is not verified arbitrage. Market-maker dry runs preview
 quotes without generating random fills, inventory, or simulated profits.
 
+Limitless and Opinion use the [C++ venue scanner](../../cpp/README.md#limitless-and-opinion).
 See [the roadmap](research-roadmap.md) for strategy examples and evaluation work.

@@ -27,7 +27,7 @@ Thumbs.db
 
 # Data and output files
 data/
-plots/
+research/
 *.csv
 *.log
 
